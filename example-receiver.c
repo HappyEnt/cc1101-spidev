@@ -20,11 +20,23 @@ int main(int argc, char *argv[])
   cc1101_write_config(PKTCTRL1, 0x0C);
   cc1101_read_config(PKTCTRL1);
 
+  // enable frequency synthesizer auto-calibration upon entering rx or tx state from idle
+  int mcsm0_orig;
+  mcsm0_orig = cc1101_read_config(MCSM0);
+  cc1101_write_config(MCSM0, mcsm0_orig | 0x10);
+  cc1101_read_config(MCSM0);
+
+  cc1101_command_strobe(header_command_sfrx);
   cc1101_set_receive();
 
   while(1) {
     int ret;
     int bytes_avail;
+
+    while(IS_STATE(cc1101_get_chip_state(), CALIBRATE)) {
+      printf("device is calibrating. wait.\n");
+    }
+
     bytes_avail = cc1101_rx_fifo_bytes();
     if (IS_STATE(cc1101_get_chip_state(), RXFIFO_OVERFLOW)) {
       cc1101_command_strobe(header_command_sfrx);
