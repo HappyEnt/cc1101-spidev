@@ -200,9 +200,9 @@ int cc1101_read_rx_fifo(__u8 *read, size_t len) {
 //
 void cc1101_set_receive() {
   __u8 ret;
-  cc1101_get_chip_state();
-  /* if (!IS_STATE(ret, SETTLING)) */
-  /*   return -1; */
+  ret = cc1101_get_chip_state();
+  if (!(IS_STATE(ret, IDLE) | IS_STATE(ret, TX_MODE)))
+    printf("Could not set chip to RX state\n");
 
   cc1101_command_strobe(header_command_srx);
   cc1101_get_chip_state();
@@ -210,9 +210,9 @@ void cc1101_set_receive() {
 
 void cc1101_set_transmit() {
   __u8 ret;
-  cc1101_get_chip_state();
-  /* if (!IS_STATE(ret, SETTLING)) */
-  /*   return -1; */
+  ret = cc1101_get_chip_state();
+  if (!(IS_STATE(ret, IDLE) | IS_STATE(ret, RX_MODE)))
+    printf("Could not set chip to TX state\n");
 
   cc1101_command_strobe(header_command_stx);
   cc1101_get_chip_state();
@@ -224,7 +224,7 @@ __u8 cc1101_read_status_reg(__u8 header) {
   __u8 data[2] = {header, 0x00};
   printf("reading status register %s\n", PRETTY_STATUS(header));
   spi_access(data, 2, read);
-  printf("Received 0x%02X\n\n", read[1]);
+  printf("Received 0x%02X\n", read[1]);
   return read[1];
 }
 
@@ -232,14 +232,14 @@ void cc1101_write_config(__u8 config, __u8 value) {
   __u8 read[2];
   __u8 data[2] = {TRANSACTION(WRITE, SINGLE, config), value};
   spi_access(data, 2, read);
-  printf("writing to config 0x%02X value 0x%02X\n\n", config, value);
+  printf("writing to config 0x%02X value 0x%02X\n", config, value);
 }
 
 __u8 cc1101_read_config(__u8 config) {
   __u8 read[2];
   __u8 data[2] = {TRANSACTION(READ, SINGLE, config), 0x00};
   spi_access(data, 2, read);
-  printf("reading from config 0x%02X value 0x%02X\n\n", config, read[1]);
+  printf("reading from config 0x%02X value 0x%02X\n", config, read[1]);
   return read[1];
 }
 
@@ -254,7 +254,7 @@ __u8 cc1101_tx_fifo_bytes() {
 __u8 cc1101_get_chip_state() {
   __u8 ret;
   ret = cc1101_command_strobe(header_command_snop);
-  printf("status: %s\n\n", PRETTY_STATE(ret));
+  printf("get_chip_state() -> %s\n", PRETTY_STATE(ret));
 
   return ret & STATE_BITS;
 }

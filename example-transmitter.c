@@ -37,17 +37,19 @@ int main(int argc, char *argv[])
       printf("device is calibrating. wait.\n");
     }
 
-    bytes_in_fifo = cc1101_tx_fifo_bytes();
+
     if (IS_STATE(cc1101_get_chip_state(), TXFIFO_UNDERFLOW)) {
       cc1101_command_strobe(header_command_sftx);
     }
 
-    if(bytes_in_fifo < 10) {
-      printf("enough space. Sending bytes\n");
-      __u8 write_buf[4] = {0x03, 0x00, 0x00, 0x00};
-      cc1101_write_tx_fifo(write_buf, 4);
+    if (IS_STATE(cc1101_get_chip_state(), TX_MODE)) {
+      bytes_in_fifo = cc1101_tx_fifo_bytes();
+      if(bytes_in_fifo < 10) {
+        printf("enough space. Sending bytes\n");
+        __u8 write_buf[4] = {0x03, 0x00, 0x00, 0x00};
+        cc1101_write_tx_fifo(write_buf, 4);
+      }
     }
-
     if (IS_STATE(cc1101_get_chip_state(), IDLE)) {
       printf("Chip is IDLING, setting back to tx\n");
       cc1101_set_transmit();
