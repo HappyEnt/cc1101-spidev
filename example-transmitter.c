@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
 
     if(bytes_in_fifo < 10) {
       __u8 write_buf[4] = {0x03, 0x00, 0x00, 0x00};
-      cc1101_write_tx_fifo(read_buf, bytes_avail);
+      cc1101_write_tx_fifo(write_buf, 4);
     }
 
     if (IS_STATE(cc1101_get_chip_state(), IDLE)) {

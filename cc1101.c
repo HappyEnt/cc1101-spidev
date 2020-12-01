@@ -159,7 +159,7 @@ void cc1101_write_tx_fifo(__u8* data, size_t len) {
     __u8 data_w_header[len+1];
 
     memcpy (data_w_header+1, data, len);
-    data_w_header[0] = header_tx_burst_fifo;
+    data_w_header[0] = header_burst_tx_fifo;
     // TODO split into multiple transmission if len exceeds 64 byte
 
     spi_access(data_w_header, len+1, read);
