@@ -244,11 +244,11 @@ __u8 cc1101_read_config(__u8 config) {
 }
 
 __u8 cc1101_rx_fifo_bytes() {
-  return cc1101_read_status_reg(header_status_rxbytes & 0x7F);
+  return cc1101_read_status_reg(header_status_rxbytes) & 0x7F;
 }
 
 __u8 cc1101_tx_fifo_bytes() {
-  return cc1101_read_status_reg(header_status_txbytes & 0x7F);
+  return cc1101_read_status_reg(header_status_txbytes) & 0x7F;
 }
 
 __u8 cc1101_get_chip_state() {

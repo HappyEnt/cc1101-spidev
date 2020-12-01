@@ -43,11 +43,13 @@ int main(int argc, char *argv[])
     }
 
     if(bytes_in_fifo < 10) {
+      printf("enough space. Sending bytes\n");
       __u8 write_buf[4] = {0x03, 0x00, 0x00, 0x00};
       cc1101_write_tx_fifo(write_buf, 4);
     }
 
     if (IS_STATE(cc1101_get_chip_state(), IDLE)) {
+      printf("Chip is IDLING, setting back to tx\n");
       cc1101_set_transmit();
     }
 
