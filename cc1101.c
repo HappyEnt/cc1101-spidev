@@ -180,9 +180,10 @@ int cc1101_read_rx_fifo(__u8 *read, size_t len) {
   ret = cc1101_command_strobe(header_command_snop);
 
   // TODO while(IS_STATE(ret, SETTLING)) loop?
-  if (!(IS_STATE(ret, RX_MODE) | IS_STATE(ret, RXFIFO_OVERFLOW)))
+  if (!(IS_STATE(ret, RX_MODE) || IS_STATE(ret, RXFIFO_OVERFLOW)))
     return -1;
 
+  fifo_bytes = cc1101_rx_fifo_bytes();
 
   spi_access(data, len+1, read_buf);
   printf("0x%02X bytes in RX FIFO\n", fifo_bytes);
@@ -201,7 +202,7 @@ int cc1101_read_rx_fifo(__u8 *read, size_t len) {
 void cc1101_set_receive() {
   __u8 ret;
   ret = cc1101_get_chip_state();
-  if (!(IS_STATE(ret, IDLE) | IS_STATE(ret, TX_MODE)))
+  if (!(IS_STATE(ret, IDLE) || IS_STATE(ret, TX_MODE)))
     printf("Could not set chip to RX state\n");
 
   cc1101_command_strobe(header_command_srx);
