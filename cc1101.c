@@ -184,9 +184,11 @@ int cc1101_read_rx_fifo(__u8 *read, size_t len) {
     return -1;
 
   fifo_bytes = cc1101_rx_fifo_bytes();
+  printf("0x%02X bytes in RX FIFO\n", fifo_bytes);
+  /* if (fifo_bytes < len) */
+  /*   return -1; */
 
   spi_access(data, len+1, read_buf);
-  printf("0x%02X bytes in RX FIFO\n", fifo_bytes);
   memcpy(read, read_buf+1, len);
 
   printf("read from fifo: ");
@@ -217,6 +219,25 @@ void cc1101_set_transmit() {
 
   cc1101_command_strobe(header_command_stx);
   cc1101_get_chip_state();
+}
+
+void cc1101_set_base_freq(int increment) {
+  __u8 data[3];
+  if (increment > (1 << 22))
+    printf("frequency increment too large!\n");
+
+  data[0] = (increment & 0x3F0000) >> 16;
+  data[1] = (increment & 0xFF00) >> 8;
+  data[2] = increment & 0xFF;
+
+  cc1101_write_config(FREQ2, data[0]);
+  cc1101_write_config(FREQ1, data[1]);
+  cc1101_write_config(FREQ0, data[2]);
+
+  // verification
+  cc1101_read_config(FREQ2);
+  cc1101_read_config(FREQ1);
+  cc1101_read_config(FREQ0);
 }
 
 // read status register, use header_status_ definitions from cc1101.h

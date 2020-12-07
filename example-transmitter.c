@@ -20,6 +20,8 @@ int main(int argc, char *argv[])
   cc1101_write_config(PKTCTRL1, 0x0C);
   cc1101_read_config(PKTCTRL1);
 
+  cc1101_set_base_freq(1091553);// frequency increment for roughly 433MHz transmission
+
   // enable frequency synthesizer auto-calibration upon entering rx or tx state from idle
   int mcsm0_orig;
   mcsm0_orig = cc1101_read_config(MCSM0);

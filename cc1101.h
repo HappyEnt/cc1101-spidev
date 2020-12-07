@@ -153,6 +153,7 @@ __u8 cc1101_read_status_reg(__u8 header);
 __u8 cc1101_get_chip_state();
 __u8 cc1101_rx_fifo_bytes();
 __u8 cc1101_tx_fifo_bytes();
+void cc1101_set_base_freq(int increment);
 void cc1101_write_config(__u8 config, __u8 value);
 __u8 cc1101_read_config(__u8 config);
 int  cc1101_read_rx_fifo(__u8 *read, size_t len);

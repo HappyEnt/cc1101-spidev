@@ -25,6 +25,7 @@ int main(int argc, char *argv[])
   mcsm0_orig = cc1101_read_config(MCSM0);
   cc1101_write_config(MCSM0, mcsm0_orig | 0x10);
   cc1101_read_config(MCSM0);
+  cc1101_set_base_freq(1091553);// frequency increment for roughly 433MHz transmission
 
   cc1101_command_strobe(header_command_sfrx);
   cc1101_set_receive();
