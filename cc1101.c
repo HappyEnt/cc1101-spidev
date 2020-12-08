@@ -141,13 +141,9 @@ static void spi_access(__u8* data, int len, __u8 *read) {
 }
 
 __u8 cc1101_command_strobe(__u8 strobe) {
-  /* printf("sending command %s\n", PRETTY_STROBE(strobe)); */
   __u8 read[2];
   __u8 data[2] = {strobe, 0x00};
   spi_access(data, 2, read);
-
-  /* printf("read[0] = 0x%02X, read[1] = 0x%02X\n", read[0], read[1]); */
-  printf("\n");
 
   return read[1];
 }
