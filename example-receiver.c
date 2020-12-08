@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
   }
 
   cc1101_read_config(PKTCTRL1);
-  cc1101_write_config(PKTCTRL1, 0x0C);
+  cc1101_write_config(PKTCTRL1, 0x0C | 0x20); // 0x0C -> auto CRC Flush, 0x20 -> PTQ = 2
   cc1101_read_config(PKTCTRL1);
 
   // enable frequency synthesizer auto-calibration upon entering rx or tx state from idle
