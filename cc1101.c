@@ -20,6 +20,7 @@ static const char STATES[8][20]   = {
   , "RXFIFO_OVERFLOW"
   , "TXFIFO_UNDERFLOW"
 };
+
 static const char STROBES[14][10] = {
   "sres"
   , "sfstxon"
@@ -36,6 +37,7 @@ static const char STROBES[14][10] = {
   , "sworrst"
   , "snop"
 };
+
 static const char STATUS[18][14] = {
   "partnum"
   , "version"
@@ -60,8 +62,8 @@ int cc1101_init(char* spi_device) {
   __u32 speed;
 
   if ((spi_dev_file = open(spi_device, O_RDWR)) < 0 ) {
-      printf("Failed to open the spidev0.1\n");
-      exit(1);
+    printf("Failed to open the %s\n", spi_device);
+    exit(1);
   }
 
   // Device defaults
@@ -162,7 +164,7 @@ void cc1101_write_tx_fifo(__u8* data, size_t len) {
 }
 
 // Return number of bytes read from FIFO or -1 if device in wrong mode
-// len: amount of bytes to read from fifo
+// len: amount of bytes to read from fifo.
 int cc1101_read_rx_fifo(__u8 *read, size_t len) {
   __u8 ret;
   __u8 fifo_bytes;
@@ -176,8 +178,8 @@ int cc1101_read_rx_fifo(__u8 *read, size_t len) {
   ret = cc1101_command_strobe(header_command_snop);
 
   // TODO while(IS_STATE(ret, SETTLING)) loop?
-  if (!(IS_STATE(ret, RX_MODE) || IS_STATE(ret, RXFIFO_OVERFLOW)))
-    return -1;
+  /* if (!(IS_STATE(ret, RX_MODE)) || IS_STATE(ret, RXFIFO_OVERFLOW)) */
+  /*   return -1; */
 
   fifo_bytes = cc1101_rx_fifo_bytes();
   printf("0x%02X bytes in RX FIFO\n", fifo_bytes);
@@ -191,6 +193,8 @@ int cc1101_read_rx_fifo(__u8 *read, size_t len) {
   for(size_t i = 0; i < len; i++) {
     printf("0x%02X ", read[i]);
   } printf("\n");
+
+
   /* if (ret & FIFO_BITS >= 0x03) { */
   /*   fifo_bytes = cc1101_read_status_reg(header_status_rxbytes); */
   /* } */
@@ -199,9 +203,10 @@ int cc1101_read_rx_fifo(__u8 *read, size_t len) {
 //
 void cc1101_set_receive() {
   __u8 ret;
+  printf("setting chip into receive mode\n");
   ret = cc1101_get_chip_state();
   if (!(IS_STATE(ret, IDLE) || IS_STATE(ret, TX_MODE)))
-    printf("Could not set chip to RX state\n");
+    printf("can not set chip to RX state. Chip is neither in IDLE or TX_MODE\n");
 
   cc1101_command_strobe(header_command_srx);
   cc1101_get_chip_state();

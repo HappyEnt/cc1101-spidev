@@ -7,7 +7,7 @@
 int main(int argc, char *argv[])
 {
   int handle; // handle system not implemented, use structure instead for one session?
-  handle = cc1101_init("/dev/spidev0.1");
+  handle = cc1101_init("/dev/spidev0.0");
 
   if (handle < 0) return 0;
   /* __u8 testdata[4] = {0x74, 0x38, 0x62, 0x11}; */

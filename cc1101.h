@@ -22,6 +22,7 @@
 #define ADDR_BITS  0x3F
 #define FIFO_BITS  0x03
 
+// Chip status byte states (more states readable from status registers)
 #define IDLE             0x00
 #define RX_MODE          0x10
 #define TX_MODE          0x20
