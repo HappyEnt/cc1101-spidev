@@ -16,32 +16,55 @@ int main(int argc, char *argv[])
     printf("device is settling\n");
   }
 
-  cc1101_read_config(PKTCTRL1);
-  cc1101_write_config(PKTCTRL1, 0x0C | 0x20); // 0x0C -> auto CRC Flush, 0x20 -> PTQ = 2
+  unsigned char PKTCTRL1_old;
+  PKTCTRL1_old = cc1101_read_config(PKTCTRL1);
+  cc1101_write_config(PKTCTRL1, PKTCTRL1_old | 0x08 | 0x80); // 0x08 -> auto CRC Flush, 0x40 -> PQT = 2*4 = 8
   cc1101_read_config(PKTCTRL1);
 
-  // enable frequency synthesizer auto-calibration upon entering rx or tx state from idle
-  int mcsm0_orig;
-  mcsm0_orig = cc1101_read_config(MCSM0);
-  cc1101_write_config(MCSM0, mcsm0_orig | 0x10);
+  // enable frequency synthesizer auto-calibration upon entering rx or tx state from idle every third time
+  int MCSM0_old;
+  MCSM0_old = cc1101_read_config(MCSM0);
+  cc1101_write_config(MCSM0, MCSM0_old | 0x30);
   cc1101_read_config(MCSM0);
   cc1101_set_base_freq(1091553);// frequency increment for roughly 433MHz transmission
 
-  cc1101_command_strobe(header_command_sfrx);
+  // set relative carrier sense threshold to 6dB
+  int AGCCTRL1_old;
+  AGCCTRL1_old = cc1101_read_config(AGCCTRL1);
+  cc1101_write_config(AGCCTRL1, AGCCTRL1_old | 0x20);
+  cc1101_read_config(AGCCTRL1);
+
+  // require both 16/16 sync word recognition aswell as positiver carrier sense threshold
+  int MDMCFG2_old;
+  MDMCFG2_old = cc1101_read_config(MDMCFG2);
+  cc1101_write_config(MDMCFG2, MDMCFG2_old | 0x06);
+  cc1101_read_config(MDMCFG2);
+
+
+  cc1101_write_config(IOCFG0, 0x07);
+
+  cc1101_command_strobe(header_command_scal);
+
+  while(IS_STATE(cc1101_get_chip_state(), CALIBRATE)) {
+    printf("device is calibrating. wait.\n");
+  }
+
   cc1101_set_receive();
 
   while(1) {
     int ret;
     int bytes_avail;
 
+
     while(IS_STATE(cc1101_get_chip_state(), CALIBRATE)) {
       printf("device is calibrating. wait.\n");
     }
 
-    bytes_avail = cc1101_rx_fifo_bytes();
     if (IS_STATE(cc1101_get_chip_state(), RXFIFO_OVERFLOW)) {
       cc1101_command_strobe(header_command_sfrx);
     }
+
+    bytes_avail = cc1101_rx_fifo_bytes();
 
     if(bytes_avail > 0) {
       __u8 read_buf[bytes_avail]; // TODO module should hide kernel types?
@@ -52,7 +75,7 @@ int main(int argc, char *argv[])
       cc1101_set_receive();
     }
 
-    sleep(1);
+    usleep(500e3);
     /* sleep(5); */
     /* printf("Reading from fifo\n"); */
 

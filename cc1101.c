@@ -68,7 +68,7 @@ int cc1101_init(char* spi_device) {
 
   // Device defaults
   /* mode = SPI_CPOL|SPI_CS_HIGH|SPI_CPHA|0; */
-  mode = SPI_CPOL|SPI_CPHA|0;
+  mode = SPI_CPOL|SPI_CPHA;
   if (ioctl(spi_dev_file, SPI_IOC_WR_MODE, &mode) < 0) {
     perror("Can't set spi mode");
     return -1;
