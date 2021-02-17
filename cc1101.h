@@ -79,9 +79,9 @@
 #define MCSM0    0x18
 #define FOCCFG   0x19
 #define BSCFG    0x1A
-#define AGCTRL2  0x1B
-#define AGCTRL1  0x1C
-#define AGCTRL0  0x1D
+#define AGCCTRL2  0x1B
+#define AGCCTRL1  0x1C
+#define AGCCTRL0  0x1D
 #define WOREVT1  0x1E
 #define WOREVT0  0x1F
 #define WORCTRL  0x20
