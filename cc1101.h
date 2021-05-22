@@ -152,6 +152,7 @@ void cc1101_deinit();
 __u8 cc1101_command_strobe(__u8 strobe);
 __u8 cc1101_read_status_reg(__u8 header);
 __u8 cc1101_get_chip_state();
+char* cc1101_get_chip_state_str();
 __u8 cc1101_rx_fifo_bytes();
 __u8 cc1101_tx_fifo_bytes();
 void cc1101_set_base_freq(int increment);

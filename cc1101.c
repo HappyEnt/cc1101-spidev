@@ -10,6 +10,9 @@
 #include <sys/ioctl.h>
 #include <linux/spi/spidev.h>
 
+#define DEBUG_LVL_TRACE 0
+#define SPI_FREQ 5000000
+
 static const char STATES[8][20]   = {
   "IDLE"
   , "RX"
@@ -86,7 +89,7 @@ int cc1101_init(char* spi_device) {
     return -1;
   }
 
-  speed = 500000;
+  speed = SPI_FREQ;
   if (ioctl(spi_dev_file, SPI_IOC_WR_MAX_SPEED_HZ, &speed) < 0) {
     perror("Can't set spi max speed");
     return -1;
@@ -122,7 +125,7 @@ static void spi_access(__u8* data, int len, __u8 *read) {
     transfers[i].cs_change = 0; /* Keep CS activated */
     /* channil[0].word_delay_usecs = 1; */
     transfers[i].delay_usecs = 1;
-    transfers[i].speed_hz = 500000;
+    transfers[i].speed_hz = SPI_FREQ;
     transfers[i].bits_per_word = 8;
     transfers[i].rx_buf = (__u64) (read_buf+i);
     transfers[i].tx_buf = (__u64) (write_buf+i);
@@ -182,17 +185,20 @@ int cc1101_read_rx_fifo(__u8 *read, size_t len) {
   /*   return -1; */
 
   fifo_bytes = cc1101_rx_fifo_bytes();
-  printf("0x%02X bytes in RX FIFO\n", fifo_bytes);
+
+  if (DEBUG_LVL_TRACE)  printf("0x%02X bytes in RX FIFO\n", fifo_bytes);
   /* if (fifo_bytes < len) */
   /*   return -1; */
 
   spi_access(data, len+1, read_buf);
   memcpy(read, read_buf+1, len);
 
-  printf("read from fifo: ");
-  for(size_t i = 0; i < len; i++) {
-    printf("0x%02X ", read[i]);
-  } printf("\n");
+  if (DEBUG_LVL_TRACE) {
+    printf("read from fifo: ");
+    for(size_t i = 0; i < len; i++) {
+      printf("0x%02X ", read[i]);
+    } printf("\n");
+  }
 
 
   /* if (ret & FIFO_BITS >= 0x03) { */
@@ -245,9 +251,8 @@ void cc1101_set_base_freq(int increment) {
 __u8 cc1101_read_status_reg(__u8 header) {
   __u8 read[2];
   __u8 data[2] = {header, 0x00};
-  printf("reading status register %s\n", PRETTY_STATUS(header));
   spi_access(data, 2, read);
-  printf("Received 0x%02X\n", read[1]);
+  if (DEBUG_LVL_TRACE) printf("Received 0x%02X\n", read[1]);
   return read[1];
 }
 
@@ -255,14 +260,14 @@ void cc1101_write_config(__u8 config, __u8 value) {
   __u8 read[2];
   __u8 data[2] = {TRANSACTION(WRITE, SINGLE, config), value};
   spi_access(data, 2, read);
-  printf("writing to config 0x%02X value 0x%02X\n", config, value);
+  if (DEBUG_LVL_TRACE) printf("writing to config 0x%02X value 0x%02X\n", config, value);
 }
 
 __u8 cc1101_read_config(__u8 config) {
   __u8 read[2];
   __u8 data[2] = {TRANSACTION(READ, SINGLE, config), 0x00};
   spi_access(data, 2, read);
-  printf("reading from config 0x%02X value 0x%02X\n", config, read[1]);
+  if (DEBUG_LVL_TRACE) printf("reading from config 0x%02X value 0x%02X\n", config, read[1]);
   return read[1];
 }
 
@@ -277,7 +282,10 @@ __u8 cc1101_tx_fifo_bytes() {
 __u8 cc1101_get_chip_state() {
   __u8 ret;
   ret = cc1101_command_strobe(header_command_snop);
-  printf("get_chip_state() -> %s\n", PRETTY_STATE(ret));
 
   return ret & STATE_BITS;
+}
+
+char* cc1101_get_chip_state_str() {
+  return STATES[cc1101_get_chip_state() >> 4];
 }
