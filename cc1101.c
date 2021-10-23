@@ -61,7 +61,7 @@ static const char STATUS[18][14] = {
 int spi_dev_file;
 
 int cc1101_init(char* spi_device) {
-  __u8 mode, lsb, bits;
+  unsigned char mode, lsb, bits;
   __u32 speed;
 
   if ((spi_dev_file = open(spi_device, O_RDWR)) < 0 ) {
@@ -107,10 +107,10 @@ void cc1101_deinit() {
 
 // 8 bits per word, e.g. N bytes of data will result in N seperate transmissions
 // TODO swap len and read
-static void spi_access(__u8* data, int len, __u8 *read) {
+static void spi_access(unsigned char* data, int len, unsigned char *read) {
   int ret;
-  __u8 write_buf[len];
-  __u8 read_buf[len];
+  unsigned char write_buf[len];
+  unsigned char read_buf[len];
   struct spi_ioc_transfer transfers[len];
 
   memset(transfers, 0, sizeof transfers);
@@ -145,19 +145,19 @@ static void spi_access(__u8* data, int len, __u8 *read) {
   memcpy(read, read_buf, len);
 }
 
-__u8 cc1101_command_strobe(__u8 strobe) {
-  __u8 read[2];
-  __u8 data[2] = {strobe, 0x00};
+unsigned char cc1101_command_strobe(unsigned char strobe) {
+  unsigned char read[2];
+  unsigned char data[2] = {strobe, 0x00};
   spi_access(data, 2, read);
 
   return read[1];
 }
 
 // Transmit len number of bytes TODO add address
-void cc1101_write_tx_fifo(__u8* data, size_t len) {
+void cc1101_write_tx_fifo(unsigned char* data, size_t len) {
   /* for (size_t i = 0; i < 64; ++i) { */
-    __u8 read[len+1];
-    __u8 data_w_header[len+1];
+    unsigned char read[len+1];
+    unsigned char data_w_header[len+1];
 
     memcpy (data_w_header+1, data, len);
     data_w_header[0] = header_burst_tx_fifo;
@@ -168,15 +168,15 @@ void cc1101_write_tx_fifo(__u8* data, size_t len) {
 
 // Return number of bytes read from FIFO or -1 if device in wrong mode
 // len: amount of bytes to read from fifo.
-int cc1101_read_rx_fifo(__u8 *read, size_t len) {
-  __u8 ret;
-  __u8 fifo_bytes;
-  __u8 read_buf[len+1];
-  __u8 data[len+1];
+int cc1101_read_rx_fifo(unsigned char *read, size_t len) {
+  unsigned char ret;
+  unsigned char fifo_bytes;
+  unsigned char read_buf[len+1];
+  unsigned char data[len+1];
   memset(data, 0 , len);
   data[0] = header_burst_rx_fifo;
 
-  __u8 cc1101_get_chip_state();
+  unsigned char cc1101_get_chip_state();
   // check FIFO for content
   ret = cc1101_command_strobe(header_command_snop);
 
@@ -208,8 +208,7 @@ int cc1101_read_rx_fifo(__u8 *read, size_t len) {
 
 //
 void cc1101_set_receive() {
-  __u8 ret;
-  printf("setting chip into receive mode\n");
+  unsigned char ret;
   ret = cc1101_get_chip_state();
   if (!(IS_STATE(ret, IDLE) || IS_STATE(ret, TX_MODE)))
     printf("can not set chip to RX state. Chip is neither in IDLE or TX_MODE\n");
@@ -219,7 +218,7 @@ void cc1101_set_receive() {
 }
 
 void cc1101_set_transmit() {
-  __u8 ret;
+  unsigned char ret;
   ret = cc1101_get_chip_state();
   if (!(IS_STATE(ret, IDLE) | IS_STATE(ret, RX_MODE)))
     printf("Could not set chip to TX state\n");
@@ -229,7 +228,7 @@ void cc1101_set_transmit() {
 }
 
 void cc1101_set_base_freq(int increment) {
-  __u8 data[3];
+  unsigned char data[3];
   if (increment > (1 << 22))
     printf("frequency increment too large!\n");
 
@@ -248,39 +247,39 @@ void cc1101_set_base_freq(int increment) {
 }
 
 // read status register, use header_status_ definitions from cc1101.h
-__u8 cc1101_read_status_reg(__u8 header) {
-  __u8 read[2];
-  __u8 data[2] = {header, 0x00};
+unsigned char cc1101_read_status_reg(unsigned char header) {
+  unsigned char read[2];
+  unsigned char data[2] = {header, 0x00};
   spi_access(data, 2, read);
   if (DEBUG_LVL_TRACE) printf("Received 0x%02X\n", read[1]);
   return read[1];
 }
 
-void cc1101_write_config(__u8 config, __u8 value) {
-  __u8 read[2];
-  __u8 data[2] = {TRANSACTION(WRITE, SINGLE, config), value};
+void cc1101_write_config(unsigned char config, unsigned char value) {
+  unsigned char read[2];
+  unsigned char data[2] = {TRANSACTION(WRITE, SINGLE, config), value};
   spi_access(data, 2, read);
   if (DEBUG_LVL_TRACE) printf("writing to config 0x%02X value 0x%02X\n", config, value);
 }
 
-__u8 cc1101_read_config(__u8 config) {
-  __u8 read[2];
-  __u8 data[2] = {TRANSACTION(READ, SINGLE, config), 0x00};
+unsigned char cc1101_read_config(unsigned char config) {
+  unsigned char read[2];
+  unsigned char data[2] = {TRANSACTION(READ, SINGLE, config), 0x00};
   spi_access(data, 2, read);
   if (DEBUG_LVL_TRACE) printf("reading from config 0x%02X value 0x%02X\n", config, read[1]);
   return read[1];
 }
 
-__u8 cc1101_rx_fifo_bytes() {
+unsigned char cc1101_rx_fifo_bytes() {
   return cc1101_read_status_reg(header_status_rxbytes) & 0x7F;
 }
 
-__u8 cc1101_tx_fifo_bytes() {
+unsigned char cc1101_tx_fifo_bytes() {
   return cc1101_read_status_reg(header_status_txbytes) & 0x7F;
 }
 
-__u8 cc1101_get_chip_state() {
-  __u8 ret;
+unsigned char cc1101_get_chip_state() {
+  unsigned char ret;
   ret = cc1101_command_strobe(header_command_snop);
 
   return ret & STATE_BITS;

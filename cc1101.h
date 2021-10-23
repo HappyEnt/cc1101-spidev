@@ -1,9 +1,7 @@
 #ifndef CC1101_H
 #define CC1101_H
 
-#include <linux/types.h>
 #include <stddef.h>
-
 
 // Master configuration
 
@@ -144,24 +142,24 @@
 #define PRETTY_STROBE(read) STROBES[(read & ADDR_BITS) - 0x30]
 #define PRETTY_STATUS(read) STATUS[(read  & ADDR_BITS) - 0x30]
 
-static void spi_access(__u8* data, int len, __u8 *read);
+static void spi_access(unsigned char* data, int len, unsigned char *read);
 
 // TODO some kind of cc1101 management structure? Instead of singleton
 int  cc1101_init(char* spi_device);
 void cc1101_deinit();
-__u8 cc1101_command_strobe(__u8 strobe);
-__u8 cc1101_read_status_reg(__u8 header);
-__u8 cc1101_get_chip_state();
+unsigned char cc1101_command_strobe(unsigned char strobe);
+unsigned char cc1101_read_status_reg(unsigned char header);
+unsigned char cc1101_get_chip_state();
 char* cc1101_get_chip_state_str();
-__u8 cc1101_rx_fifo_bytes();
-__u8 cc1101_tx_fifo_bytes();
+unsigned char cc1101_rx_fifo_bytes();
+unsigned char cc1101_tx_fifo_bytes();
 void cc1101_set_base_freq(int increment);
-void cc1101_write_config(__u8 config, __u8 value);
-__u8 cc1101_read_config(__u8 config);
-int  cc1101_read_rx_fifo(__u8 *read, size_t len);
-void cc1101_write_tx_fifo(__u8 *data, size_t len);
+void cc1101_write_config(unsigned char config, unsigned char value);
+unsigned char cc1101_read_config(unsigned char config);
+int  cc1101_read_rx_fifo(unsigned char *read, size_t len);
+void cc1101_write_tx_fifo(unsigned char *data, size_t len);
 void cc1101_set_receive(); // TODO add a option to stay receiving permanently
 void cc1101_set_transmit();
-void cc1101_transmit(__u8* data, size_t len);
+void cc1101_transmit(unsigned char* data, size_t len);
 
 #endif /* CC1101_H */
