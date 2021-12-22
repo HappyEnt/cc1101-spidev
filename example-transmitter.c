@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
       bytes_in_fifo = cc1101_tx_fifo_bytes();
       if(bytes_in_fifo < 10) {
         printf("enough space. Sending bytes\n");
-        __u8 write_buf[4] = {0x03, 0x00, 0x00, 0x00};
+        unsigned char write_buf[4] = {0x03, 0x00, 0x00, 0x00};
         cc1101_write_tx_fifo(write_buf, 4);
       }
     }

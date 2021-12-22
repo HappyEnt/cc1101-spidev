@@ -137,11 +137,6 @@ static void spi_access(unsigned char* data, int len, unsigned char *read) {
     return;
   }
 
-  /* printf("read: "); */
-  /* for (size_t i = 0; i < len; ++i) { */
-  /*   printf("0x%02X ", read_buf[i]); */
-  /* } printf("\n"); */
-
   memcpy(read, read_buf, len);
 }
 
@@ -287,4 +282,84 @@ unsigned char cc1101_get_chip_state() {
 
 char* cc1101_get_chip_state_str() {
   return STATES[cc1101_get_chip_state() >> 4];
+}
+
+void cc1101_write_configuration(cc1101_configuration_t config) {
+  for (unsigned char reg_addr = 0x00; reg_addr <= TEST0; reg_addr++) { // TEST0 is reg with highest address
+    // TODO we should save the configuration values that are currently loaded into the transceiver somewhere,
+    // so we do not write values that are left unchanged by the configuration
+    cc1101_write_config(reg_addr, config[reg_addr])
+  }
+}
+
+
+// checks whether the values in the register of the cc1101 transceiver match the values in the configuration
+// in case there is a mismatch, the addr of the register with the mismatch is returned.
+// Only the first mismatch is returned.
+char cc1101_check_configuration_values(cc1101_configuration_t config) {
+  for (unsigned char reg_addr = 0x00; reg_addr <= TEST0; reg_addr++) { // TEST0 is reg with highest address
+    // TODO we should save the configuration values that are currently loaded into the transceiver somewhere,
+    // so we do not write values that are left unchanged by the configuration
+    if (cc1101_read_config(reg_addr) != config[reg_addr]) {
+      return reg_addr;
+    }
+  }
+
+  return -1;
+}
+
+void cc1101_generate_default_configuration(cc1101_configuration_t config) {
+  memcpy(config, default_config, sizeof(cc1101_configuration_t));
+}
+
+void cc1101_high_sense_configuration(cc1101_configuration_t config) {
+  config[PKTCTRL1] =
+    BM_PQT(2) |
+    BM_CRC_AUTOFLUSH(1) |
+    BM_APPEND_STATUS(1) |
+    BM_ADR_CHK(0);
+
+  config[MCSM0] =
+    BM_FS_AUTOCAL(2) |
+    BM_PO_TIMEOUT(1) |
+    BM_PIN_CTRL_EN(0) |
+    BM_XOSC_FORCE_ON(0);
+
+  config[AGCCTRL0] =
+    BM_HYST_LEVEL(2) |
+    BM_WAIT_TIME(3) |
+    BM_AGC_FREEZE(0) |
+    BM_FILTER_LENGTH(3);
+
+  config[AGCCTRL1] =
+    BM_AGC_LNA_PRIORITY(1) |
+    BM_CARRIER_SENSE_REL_THR(0) |
+    BM_CARRIER_SENSE_ABS_THR(0);
+
+  config[AGCCTRL2] =
+    BM_MAX_DVGA_GAIN(0) |
+    BM_MAX_LNA_GAIN(0) |
+    BM_MAGN_TARGET(6);
+
+  config[MDMCFG2] =
+    BM_DEM_DCFILT_OFF(0) |
+    BM_MOD_FORMAT(0) |
+    BM_MANCHESTER_EN(0) |
+    BM_SYNC_MODE(2);
+
+  config[MDMCFG4] =
+    BM_CHANBW_E(3) |
+    BM_CHANBW_M(3) |
+    BM_DRATE_E(7);
+
+  config[MDMCFG3] =
+    BM_MDMCFG3(228);
+
+  config[DEVIATN] =
+    BM_DEVIATON_E(3) |
+    BM_DEVIATION_M(1);
+
+  config[IOCFG0] =
+    BM_GDO0_INV(0) |
+    BM_GDO0_CFG(7);
 }

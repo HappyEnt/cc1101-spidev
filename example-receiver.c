@@ -159,7 +159,7 @@ int main(int argc, char *argv[])
     bytes_avail = cc1101_rx_fifo_bytes();
 
     if(bytes_avail > 0) {
-      __u8 read_buf[bytes_avail]; // TODO module should hide kernel types?
+      unsigned char read_buf[bytes_avail]; // TODO module should hide kernel types?
       cc1101_read_rx_fifo(read_buf, bytes_avail);
 
       printf("received %d bytes of data\n", bytes_avail);
